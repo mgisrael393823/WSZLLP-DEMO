@@ -35,62 +35,59 @@ const DEMO_DATA = {
   // Sample cases
   cases: [
     {
-      caseNumber: 'DEMO-2025-001',
-      plaintiffName: 'ABC Property Management LLC',
-      defendantName: 'John Smith',
-      caseType: 'Eviction',
+      id: 'a1234567-89ab-cdef-0123-456789abcdef',
+      plaintiff: 'ABC Property Management LLC',
+      defendant: 'John Smith',
+      address: '123 Main St, Chicago, IL 60601',
       status: 'Filed',
-      filingDate: new Date('2025-01-15').toISOString(),
-      county: 'Cook County',
-      courtLocation: 'Chicago - Richard J. Daley Center',
+      intakedate: new Date('2025-01-15').toISOString(),
     },
     {
-      caseNumber: 'DEMO-2025-002',
-      plaintiffName: 'XYZ Apartments Inc',
-      defendantName: 'Jane Doe',
-      caseType: 'Eviction',
+      id: 'b2345678-9abc-def0-1234-56789abcdef0',
+      plaintiff: 'XYZ Apartments Inc',
+      defendant: 'Jane Doe',
+      address: '456 Oak Ave, Wheaton, IL 60187',
       status: 'Hearing Scheduled',
-      filingDate: new Date('2025-01-20').toISOString(),
-      county: 'DuPage County',
-      courtLocation: 'Wheaton Courthouse',
+      intakedate: new Date('2025-01-20').toISOString(),
     },
     {
-      caseNumber: 'DEMO-2025-003',
-      plaintiffName: 'Riverside Properties LLC',
-      defendantName: 'Robert Johnson',
-      caseType: 'Eviction',
+      id: 'c3456789-abcd-ef01-2345-6789abcdef01',
+      plaintiff: 'Riverside Properties LLC',
+      defendant: 'Robert Johnson',
+      address: '789 River Rd, Waukegan, IL 60085',
       status: 'Judgment Entered',
-      filingDate: new Date('2025-01-10').toISOString(),
-      county: 'Lake County',
-      courtLocation: 'Waukegan Courthouse',
+      intakedate: new Date('2025-01-10').toISOString(),
     },
   ],
 
   // Sample contacts
   contacts: [
     {
-      firstName: 'John',
-      lastName: 'Smith',
+      name: 'John Smith',
       email: 'john.smith@example.com',
       phone: '555-0101',
-      contactType: 'Defendant',
+      role: 'Client',
       company: null,
+      address: '123 Main St, Chicago, IL',
+      notes: 'Defendant in DEMO-2025-001',
     },
     {
-      firstName: 'Jane',
-      lastName: 'Doe',
+      name: 'Jane Doe',
       email: 'jane.doe@example.com',
       phone: '555-0102',
-      contactType: 'Defendant',
+      role: 'Client',
       company: null,
+      address: '456 Oak Ave, Wheaton, IL',
+      notes: 'Defendant in DEMO-2025-002',
     },
     {
-      firstName: 'Michael',
-      lastName: 'Williams',
+      name: 'Michael Williams',
       email: 'mwilliams@abcpm.com',
       phone: '555-0201',
-      contactType: 'Property Manager',
+      role: 'PM',
       company: 'ABC Property Management LLC',
+      address: '789 Business Blvd, Chicago, IL',
+      notes: 'Property Manager for ABC Properties',
     },
   ],
 };
@@ -107,7 +104,7 @@ async function seedDemoData() {
       email_confirm: true,
     });
 
-    if (authError && !authError.message.includes('already registered')) {
+    if (authError && authError.code !== 'email_exists' && !authError.message.includes('already registered')) {
       throw authError;
     }
 
@@ -116,14 +113,9 @@ async function seedDemoData() {
 
     // Step 2: Seed contacts
     console.log('Step 2: Seeding contacts...');
-    const contactsToInsert = DEMO_DATA.contacts.map(contact => ({
-      ...contact,
-      user_id: demoUserId,
-    }));
-
     const { data: contacts, error: contactsError } = await supabase
       .from('contacts')
-      .insert(contactsToInsert)
+      .insert(DEMO_DATA.contacts)
       .select();
 
     if (contactsError) throw contactsError;
@@ -131,14 +123,9 @@ async function seedDemoData() {
 
     // Step 3: Seed cases
     console.log('Step 3: Seeding cases...');
-    const casesToInsert = DEMO_DATA.cases.map(caseData => ({
-      ...caseData,
-      user_id: demoUserId,
-    }));
-
     const { data: cases, error: casesError } = await supabase
       .from('cases')
-      .insert(casesToInsert)
+      .insert(DEMO_DATA.cases)
       .select();
 
     if (casesError) throw casesError;
@@ -148,11 +135,12 @@ async function seedDemoData() {
     console.log('Step 4: Creating sample hearings...');
     const hearings = [
       {
+        id: 'd4567890-bcde-f012-3456-789abcdef012',
         case_id: cases[1].id, // Jane Doe case
         hearing_date: new Date('2025-02-15T10:00:00').toISOString(),
-        hearing_type: 'Initial Hearing',
-        location: 'Wheaton Courthouse - Room 204',
-        user_id: demoUserId,
+        court_name: 'Wheaton Courthouse - Room 204',
+        participants: ['Jane Doe', 'Attorney Smith'],
+        outcome: null,
       },
     ];
 
@@ -185,14 +173,13 @@ async function seedDemoData() {
 }
 
 async function getUserId(email) {
-  const { data, error } = await supabase
-    .from('auth.users')
-    .select('id')
-    .eq('email', email)
-    .single();
-
+  const { data, error } = await supabase.auth.admin.listUsers();
   if (error) throw error;
-  return data.id;
+
+  const user = data.users.find(u => u.email === email);
+  if (!user) throw new Error(`User with email ${email} not found`);
+
+  return user.id;
 }
 
 // Run the seed
