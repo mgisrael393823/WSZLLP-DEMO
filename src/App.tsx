@@ -166,14 +166,6 @@ const AppContent = () => {
             }
           />
           <Route
-            path="efile"
-            element={
-              <Suspense fallback={<div className="p-4">Loading e-file...</div>}>
-                <EFilePage />
-              </Suspense>
-            }
-          />
-          <Route
             path="service-logs"
             element={
               <Suspense fallback={<div className="p-4">Loading service logs...</div>}>
@@ -182,6 +174,16 @@ const AppContent = () => {
             }
           />
         </Route>
+        <Route
+          path="/efile"
+          element={
+            <Suspense fallback={<div className="p-8 text-center">Loading e-filing...</div>}>
+              <EFilePage />
+            </Suspense>
+          }
+        />
+        {/* Backwards compatibility redirect */}
+        <Route path="/documents/efile" element={<Navigate to="/efile" replace />} />
         <Route
           path="/documents/:id"
           element={
