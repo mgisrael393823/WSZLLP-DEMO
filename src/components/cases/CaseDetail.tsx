@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate, useSearchParams } from 'react-router-dom';
 import { useData } from '../../context/DataContext';
 import { useInvoices } from '../../hooks/useInvoices';
+import { supabase } from '../../lib/supabaseClient';
 import { format, parseISO, isValid } from 'date-fns';
 import { 
   ArrowLeft, Plus, Calendar, FileText, Edit, 
@@ -26,7 +27,7 @@ const CaseDetail: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
-  const { state } = useData();
+  const { state, dispatch } = useData();
   const [isHearingModalOpen, setIsHearingModalOpen] = useState(false);
   const [isDocumentModalOpen, setIsDocumentModalOpen] = useState(false);
   const [isInvoiceModalOpen, setIsInvoiceModalOpen] = useState(false);
@@ -34,6 +35,7 @@ const CaseDetail: React.FC = () => {
   const [activeTab, setActiveTab] = useState<'timeline' | 'hearings' | 'documents' | 'invoices' | 'financial' | 'activity'>('timeline');
   const [currentPage, setCurrentPage] = useState(1);
   const [isActionsMenuOpen, setIsActionsMenuOpen] = useState(false);
+  const [isLoadingCase, setIsLoadingCase] = useState(false);
 
   // Handle tab parameter from URL
   useEffect(() => {
@@ -42,6 +44,52 @@ const CaseDetail: React.FC = () => {
       setActiveTab(tabParam as typeof activeTab);
     }
   }, [searchParams]);
+
+  // Fetch case from Supabase if not in context
+  useEffect(() => {
+    const fetchCase = async () => {
+      if (!id) return;
+
+      // Check if case is already in context
+      const existingCase = state.cases.find(c => c.caseId === id);
+      if (existingCase) return;
+
+      setIsLoadingCase(true);
+      try {
+        const { data, error } = await supabase
+          .from('cases')
+          .select('*')
+          .eq('id', id)
+          .single();
+
+        if (error) throw error;
+
+        if (data) {
+          // Map Supabase case to app Case type
+          const mappedCase = {
+            caseId: data.id,
+            userId: data.user_id || '',
+            plaintiff: data.plaintiff,
+            defendant: data.defendant,
+            address: data.address || '',
+            status: data.status,
+            dateFiled: data.intakedate || undefined,
+            createdAt: data.createdat || new Date().toISOString(),
+            updatedAt: data.updatedat || new Date().toISOString(),
+          };
+
+          // Add to context
+          dispatch({ type: 'ADD_CASE', payload: mappedCase });
+        }
+      } catch (error) {
+        console.error('Error fetching case:', error);
+      } finally {
+        setIsLoadingCase(false);
+      }
+    };
+
+    fetchCase();
+  }, [id, state.cases, dispatch]);
 
   const itemsPerPage = 5;
 
@@ -89,6 +137,17 @@ const CaseDetail: React.FC = () => {
   const handlePageChange = (page: number) => {
     setCurrentPage(page);
   };
+
+  if (isLoadingCase) {
+    return (
+      <div className="text-center py-12">
+        <div className="animate-pulse">
+          <div className="h-8 bg-neutral-200 rounded w-64 mx-auto mb-4"></div>
+          <div className="h-4 bg-neutral-200 rounded w-96 mx-auto"></div>
+        </div>
+      </div>
+    );
+  }
 
   if (!caseData) {
     return (
