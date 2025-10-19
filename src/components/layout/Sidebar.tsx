@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
-import { 
+import {
   Briefcase, FileText, Users, Settings,
-  LayoutDashboard, HelpCircle, Calendar, Activity, DollarSign, Database
+  LayoutDashboard, HelpCircle, Calendar, Activity, DollarSign, Database, Upload
 } from 'lucide-react';
 
 interface SidebarProps {
@@ -41,15 +41,21 @@ const createNavStructure = (): NavItem[] => [
     icon: <Calendar size={20} />,
     description: 'Manage court hearings and proceedings'
   },
-  { 
-    label: 'Documents', 
-    value: 'documents', 
+  {
+    label: 'Documents',
+    value: 'documents',
     icon: <FileText size={20} />,
     description: 'Case documents and files'
   },
-  { 
-    label: 'Invoices', 
-    value: 'invoices', 
+  {
+    label: 'E-Filing',
+    value: 'efile',
+    icon: <Upload size={20} />,
+    description: 'Electronic court document filing'
+  },
+  {
+    label: 'Invoices',
+    value: 'invoices',
     icon: <DollarSign size={20} />,
     description: 'Manage billing and payments'
   },
@@ -90,13 +96,13 @@ const Sidebar: React.FC<SidebarProps> = ({
   // based on current route (supports child routes)
   const isNavItemActive = (itemValue: string): boolean => {
     if (activeSection === itemValue) return true;
-    
+
     // Special handling for parent pages with child routes
-    // Remove hearings from cases - now standalone
-    if (itemValue === 'documents' && ['efile', 'service-logs'].includes(activeSection)) {
+    // E-Filing is now a standalone top-level route
+    if (itemValue === 'documents' && ['service-logs'].includes(activeSection)) {
       return true;
     }
-    
+
     return false;
   };
 

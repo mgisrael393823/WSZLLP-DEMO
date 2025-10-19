@@ -29,11 +29,18 @@ const queryClient = new QueryClient({
 
 const EFilePage: React.FC = () => {
   const [formKey, setFormKey] = useState(0); // To force form re-render when loading draft
+  const [drafts, setDrafts] = useState<any[]>([]);
+
+  // Load drafts on mount
+  React.useEffect(() => {
+    const savedDrafts = JSON.parse(localStorage.getItem('efileDrafts') || '[]');
+    setDrafts(savedDrafts);
+  }, []);
 
   const handleLoadDraft = (draftData: any) => {
     // Force form to re-render with new key
     setFormKey(prev => prev + 1);
-    
+
     // The form will load the draft data from localStorage on mount
     const existingDrafts = JSON.parse(localStorage.getItem('efileDrafts') || '[]');
     // Add the loaded draft as the most recent
@@ -56,17 +63,6 @@ const EFilePage: React.FC = () => {
     <QueryClientProvider client={queryClient}>
       <EFileProvider>
         <div data-cy="efile-page" className="space-y-6">
-          {/* Saved Drafts Card */}
-          <PageCard
-            data-cy="efile-drafts"
-            title="Saved Drafts"
-            subtitle="Load a previously saved e-filing draft"
-            maxWidth="4xl"
-            withBackground={false}
-          >
-            <EFileDrafts onLoadDraft={handleLoadDraft} />
-          </PageCard>
-
           {/* Main E-Filing Card */}
           <PageCard
             data-cy="efile-form"
@@ -88,6 +84,19 @@ const EFilePage: React.FC = () => {
           >
             <EFileStatusListSimple />
           </PageCard>
+
+          {/* Saved Drafts Card - Only show if drafts exist */}
+          {drafts.length > 0 && (
+            <PageCard
+              data-cy="efile-drafts"
+              title="Saved Drafts"
+              subtitle="Load a previously saved e-filing draft"
+              maxWidth="4xl"
+              withBackground={false}
+            >
+              <EFileDrafts onLoadDraft={handleLoadDraft} />
+            </PageCard>
+          )}
         </div>
       </EFileProvider>
     </QueryClientProvider>
