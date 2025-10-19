@@ -152,6 +152,67 @@ async function seedDemoData() {
     if (hearingsError) throw hearingsError;
     console.log(`✅ Created ${hearingsData.length} hearing(s)\n`);
 
+    // Step 5: Create sample documents
+    console.log('Step 5: Creating sample documents...');
+    const documents = [
+      {
+        case_id: cases[0].id, // ABC Property Management LLC case
+        type: 'Complaint',
+        file_url: 'https://example.com/documents/complaint-001.pdf',
+        original_filename: 'Eviction_Complaint_Smith.pdf',
+        status: 'Served',
+        service_date: new Date('2025-01-18T00:00:00').toISOString(),
+      },
+      {
+        case_id: cases[0].id, // ABC Property Management LLC case
+        type: 'Summons',
+        file_url: 'https://example.com/documents/summons-001.pdf',
+        original_filename: 'Summons_Smith.pdf',
+        status: 'Served',
+        service_date: new Date('2025-01-18T00:00:00').toISOString(),
+      },
+      {
+        case_id: cases[1].id, // XYZ Apartments Inc case
+        type: 'Complaint',
+        file_url: 'https://example.com/documents/complaint-002.pdf',
+        original_filename: 'Eviction_Complaint_Doe.pdf',
+        status: 'Pending',
+        service_date: null,
+      },
+      {
+        case_id: cases[1].id, // XYZ Apartments Inc case
+        type: 'Affidavit',
+        file_url: 'https://example.com/documents/affidavit-002.pdf',
+        original_filename: 'Service_Affidavit_Doe.pdf',
+        status: 'Pending',
+        service_date: null,
+      },
+      {
+        case_id: cases[2].id, // Riverside Properties LLC case
+        type: 'Order',
+        file_url: 'https://example.com/documents/order-003.pdf',
+        original_filename: 'Court_Order_Judgment.pdf',
+        status: 'Served',
+        service_date: new Date('2025-01-12T00:00:00').toISOString(),
+      },
+      {
+        case_id: cases[2].id, // Riverside Properties LLC case
+        type: 'Motion',
+        file_url: 'https://example.com/documents/motion-003.pdf',
+        original_filename: 'Motion_for_Summary_Judgment.pdf',
+        status: 'Served',
+        service_date: new Date('2025-01-11T00:00:00').toISOString(),
+      },
+    ];
+
+    const { data: documentsData, error: documentsError } = await supabase
+      .from('documents')
+      .insert(documents)
+      .select();
+
+    if (documentsError) throw documentsError;
+    console.log(`✅ Created ${documentsData.length} document(s)\n`);
+
     // Success summary
     console.log('═══════════════════════════════════════════');
     console.log('✅ Demo data seeded successfully!');
@@ -163,6 +224,7 @@ async function seedDemoData() {
     console.log(`  Cases: ${cases.length}`);
     console.log(`  Contacts: ${contacts.length}`);
     console.log(`  Hearings: ${hearingsData.length}`);
+    console.log(`  Documents: ${documentsData.length}`);
     console.log('\n⚠️  Store these credentials securely for client demos!');
     console.log('═══════════════════════════════════════════\n');
 

@@ -5,10 +5,8 @@ import { supabase } from '../../lib/supabaseClient';
 import { useToast } from '../../context/ToastContext';
 import { createDocument } from '../../hooks/useDocuments';
 import Button from '../ui/Button';
-import { Card } from '../ui/shadcn-card';
 import Select from '../ui/Select';
 import Input from '../ui/Input';
-import Typography from '../ui/Typography';
 
 interface DocumentUploadFormProps {
   caseId?: string;
@@ -349,19 +347,7 @@ const DocumentUploadForm: React.FC<DocumentUploadFormProps> = ({
   const hasSuccessfulUploads = files.some(f => f.status === 'success');
 
   return (
-    <div className="max-w-4xl mx-auto p-content-comfortable space-y-content-comfortable">
-      <div className="flex justify-between items-center">
-        <div>
-          <Typography variant="h1" weight="bold">Upload Documents</Typography>
-          <Typography variant="body2" color="medium">Upload legal documents and associate them with cases</Typography>
-        </div>
-        <Button variant="outline" onClick={() => navigate('/documents')}>
-          Back to Documents
-        </Button>
-      </div>
-
-      <Card size="normal">
-        <div className="space-y-6">
+    <div className="space-y-4">
           {/* Case and Type Selection */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <Select
@@ -406,7 +392,8 @@ const DocumentUploadForm: React.FC<DocumentUploadFormProps> = ({
             
             <Input
               label="Service Date"
-              type="date"
+              type="text"
+              placeholder="MM/DD/YYYY"
               value={serviceDate}
               onChange={(e) => setServiceDate(e.target.value)}
             />
@@ -428,14 +415,14 @@ const DocumentUploadForm: React.FC<DocumentUploadFormProps> = ({
 
           {/* File Upload Area */}
           <div className="space-y-4">
-            <Typography variant="caption" weight="medium" color="default" className="block">
+            <label className="block text-sm font-medium text-neutral-700">
               Documents
-            </Typography>
-            
+            </label>
+
             <div
-              className={`border-2 border-dashed rounded-lg p-content-spacious text-center transition-colors ${
-                dragActive 
-                  ? 'border-blue-500 bg-blue-50' 
+              className={`border-2 border-dashed rounded-lg p-8 text-center transition-colors ${
+                dragActive
+                  ? 'border-blue-500 bg-blue-50'
                   : 'border-neutral-300 hover:border-neutral-400'
               }`}
               onDragEnter={handleDragIn}
@@ -445,7 +432,7 @@ const DocumentUploadForm: React.FC<DocumentUploadFormProps> = ({
             >
               <Upload className="w-12 h-12 mx-auto text-neutral-400 mb-4" />
               <div className="space-y-2">
-                <Typography variant="body1" color="medium">
+                <p className="text-sm text-neutral-600">
                   Drag and drop files here, or{' '}
                   <button
                     type="button"
@@ -454,10 +441,10 @@ const DocumentUploadForm: React.FC<DocumentUploadFormProps> = ({
                   >
                     browse
                   </button>
-                </Typography>
-                <Typography variant="caption" color="muted">
+                </p>
+                <p className="text-xs text-neutral-500">
                   Supports PDF, DOC, DOCX files up to 10MB each
-                </Typography>
+                </p>
               </div>
               
               <input
@@ -473,27 +460,27 @@ const DocumentUploadForm: React.FC<DocumentUploadFormProps> = ({
 
           {/* File List */}
           {files.length > 0 && (
-            <div className="space-y-3">
-              <Typography variant="h3" weight="medium">Selected Files</Typography>
+            <div className="space-y-4">
+              <h3 className="text-sm font-medium text-neutral-900">Selected Files</h3>
               <div className="space-y-2">
                 {files.map((fileObj) => (
                   <div
                     key={fileObj.id}
-                    className="flex items-center justify-between p-content-tight bg-neutral-50 rounded-lg"
+                    className="flex items-center justify-between p-3 bg-neutral-50 rounded-lg"
                   >
-                    <div className="flex items-center space-x-content-tight flex-1">
+                    <div className="flex items-center gap-3 flex-1">
                       {getStatusIcon(fileObj.status)}
                       <div className="flex-1 min-w-0">
-                        <Typography variant="caption" weight="medium" className="truncate">
+                        <p className="text-sm font-medium text-neutral-900 truncate">
                           {fileObj.file.name}
-                        </Typography>
-                        <Typography variant="caption" color="muted">
+                        </p>
+                        <p className="text-xs text-neutral-500">
                           {(fileObj.file.size / 1024 / 1024).toFixed(2)} MB
-                        </Typography>
+                        </p>
                         {fileObj.error && (
-                          <Typography variant="caption" className="text-red-600 mt-1">
+                          <p className="text-xs text-red-600 mt-1">
                             {typeof fileObj.error === 'string' ? fileObj.error : 'Upload error occurred'}
-                          </Typography>
+                          </p>
                         )}
                       </div>
                     </div>
@@ -507,9 +494,9 @@ const DocumentUploadForm: React.FC<DocumentUploadFormProps> = ({
                             style={{ width: `${fileObj.progress}%` }}
                           />
                         </div>
-                        <Typography variant="caption" color="muted" className="mt-1 text-center">
+                        <p className="text-xs text-neutral-500 mt-1 text-center">
                           {fileObj.progress}%
-                        </Typography>
+                        </p>
                       </div>
                     )}
 
@@ -530,18 +517,16 @@ const DocumentUploadForm: React.FC<DocumentUploadFormProps> = ({
           )}
 
           {/* Action Buttons */}
-          <div className="flex justify-between items-center pt-content-normal border-t">
-            <div className="flex space-x-content-tight">
-              <Button
-                variant="outline"
-                onClick={handleReset}
-                disabled={isUploading}
-              >
-                Reset
-              </Button>
-            </div>
-            
-            <div className="flex space-x-content-tight">
+          <div className="flex justify-between items-center pt-4 border-t border-neutral-200">
+            <Button
+              variant="outline"
+              onClick={handleReset}
+              disabled={isUploading}
+            >
+              Reset
+            </Button>
+
+            <div className="flex gap-2">
               {allFilesProcessed && hasSuccessfulUploads && (
                 <Button
                   variant="outline"
@@ -567,8 +552,6 @@ const DocumentUploadForm: React.FC<DocumentUploadFormProps> = ({
               </Button>
             </div>
           </div>
-        </div>
-      </Card>
     </div>
   );
 };

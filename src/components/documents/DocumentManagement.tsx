@@ -26,12 +26,6 @@ const DocumentManagement: React.FC = () => {
       icon: <Upload size={16} />
     },
     {
-      label: 'eFiling',
-      value: 'efile',
-      route: '/documents/efile',
-      icon: <Upload size={16} />
-    },
-    {
       label: 'Service Logs',
       value: 'service-logs',
       route: '/documents/service-logs',
