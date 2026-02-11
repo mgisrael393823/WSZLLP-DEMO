@@ -34,7 +34,12 @@ export function DateRangeFilter<TData>({ column, className }: DateRangeFilterPro
 
   const handleStartDateChange = (value: string) => {
     setStartDate(value);
-    updateFilter(value, endDate);
+    if (endDate && value > endDate) {
+      setEndDate('');
+      updateFilter(value, '');
+    } else {
+      updateFilter(value, endDate);
+    }
   };
 
   const handleEndDateChange = (value: string) => {
