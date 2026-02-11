@@ -17,7 +17,7 @@ export function DateRangeFilter<TData>({ column, className }: DateRangeFilterPro
   useEffect(() => {
     setStartDate(columnFilterValue?.[0] ?? '');
     setEndDate(columnFilterValue?.[1] ?? '');
-  }, [columnFilterValue]);
+  }, [columnFilterValue?.[0], columnFilterValue?.[1]]);
 
   const minMaxValues = column.getFacetedMinMaxValues?.() as [string, string] | undefined;
   const minDate = minMaxValues?.[0];
